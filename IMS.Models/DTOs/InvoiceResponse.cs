@@ -8,6 +8,7 @@ namespace IMS.Models.DTOs
     {
         public int Id { get; set; }
         public string InvoiceNumber { get; set; } = null!;
+        public string? CustomerName { get; set; } = null;
         public decimal GrandTotal { get; set; }
         public List<InvoiceLineResponse> Lines { get; set; } = [];
     }

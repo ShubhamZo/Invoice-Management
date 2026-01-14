@@ -16,18 +16,17 @@ namespace IMS.Data.Repository
         {
             _context = context;
         }
-
-        public async Task AddAsync(Invoice invoice)
+        public async Task<List<Invoice>> GetAllAsync()
+        {
+            return await _context.Invoices.Include(x => x.InvoiceLines).ToListAsync();
+        }
+        public async Task AddInvoiceAsync(Invoice invoice)
             => await _context.Invoices.AddAsync(invoice);
 
         public async Task<Invoice?> GetByIdAsync(int id)
-            => await _context.Invoices
-                .Include(x => x.InvoiceLines)
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-        public async Task<List<Invoice>> GetAllAsync()
-            => await _context.Invoices.Include(x => x.InvoiceLines).ToListAsync();
-
+        {
+            return await _context.Invoices.FirstOrDefaultAsync(x => x.Id == id);
+        }
         public async Task<int> GetMaxInvoiceSequenceAsync(int year)
         {
             var prefix = $"INV-{year}-";

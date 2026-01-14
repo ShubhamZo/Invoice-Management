@@ -8,6 +8,7 @@ namespace IMS.Models.DTOs
     {
         public string CustomerName { get; set; } = null!;
         public DateTime InvoiceDate { get; set; }
+        public int Status { get; set; }
         public List<CreateInvoiceLineRequest> Lines { get; set; } = [];
     }
 }

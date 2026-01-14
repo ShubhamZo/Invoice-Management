@@ -37,8 +37,9 @@ namespace IMS.Models.Entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal LineTotal { get; set; }
 
+
         // Navigation
-        [JsonIgnore]
-        public Invoice Invoice { get; set; } = null!;
+        //[JsonIgnore]
+        //public Invoice Invoice { get; set; } = null!;
     }
 }

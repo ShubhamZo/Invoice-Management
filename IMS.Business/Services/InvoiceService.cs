@@ -17,24 +17,43 @@ namespace IMS.Business.Services
         public readonly IValidator<CreateInvoiceRequest> _invoicevalidator;
         public readonly IUnitOfWork _uow;
         public readonly IInvoiceRepository _invoiceRepository;
-        public InvoiceService(IValidator<CreateInvoiceRequest> invoicevalidator, IUnitOfWork uow, IInvoiceRepository invoiceRepository) 
+        
+        public InvoiceService(IUnitOfWork uow, IInvoiceRepository invoiceRepository) 
         { 
-            _invoicevalidator = invoicevalidator;
             _uow = uow;
             _invoiceRepository = invoiceRepository; 
         }
+        public async Task<List<InvoiceResponse>> GetAllAsync()
+        {
+            var invoice = await _uow.Invoices.GetAllAsync();
+            return invoice.Select(invoice => new InvoiceResponse
+            {
+                Id = invoice.Id,
+                InvoiceNumber = invoice.InvoiceNumber,
+                CustomerName = invoice.CustomerName,
+                GrandTotal = invoice.GrandTotal,
+
+                Lines = invoice.InvoiceLines.Select(line => new InvoiceLineResponse
+                {
+                    Description = line.Description, 
+                    Quantity = line.Quantity,
+                    UnitPrice = line.UnitPrice,
+                    TaxPercent = line.TaxPercent,
+                }).ToList()
+            }).ToList();
+        }
         public async Task<InvoiceResponse> CreateAsync(CreateInvoiceRequest request)
         {
-            var validationResult = await _invoicevalidator.ValidateAsync(request);
+            /*var validationResult = await _invoicevalidator.ValidateAsync(request);
             if (validationResult != null)
             {
                 throw new ValidationException(validationResult.Errors);
-            }
+            }*/
             var invoice = new Invoice
             {
                 CustomerName = request.CustomerName,
                 InvoiceDate = request.InvoiceDate,
-                Status = InvoiceStatus.Draft,
+                Status = (InvoiceStatus)request.Status,
                 InvoiceNumber = await GenerateInvoiceNumberAsync()
             };
 
@@ -59,7 +78,7 @@ namespace IMS.Business.Services
             invoice.TaxTotal = invoice.InvoiceLines.Sum(x => x.LineTax);
             invoice.GrandTotal = invoice.SubTotal + invoice.TaxTotal;
 
-            await _uow.Invoices.AddAsync(invoice);
+            await _uow.Invoices.AddInvoiceAsync(invoice);
             await _uow.SaveChangesAsync(); // transactional
 
             return new InvoiceResponse
@@ -74,15 +93,39 @@ namespace IMS.Business.Services
         {
             var invoice = await _uow.Invoices.GetByIdAsync(id);
             if (invoice == null) return null;
-
-            return new InvoiceResponse
-            {
-                Id = invoice.Id,
-                InvoiceNumber = invoice.InvoiceNumber,
-                GrandTotal = invoice.GrandTotal
-            };
+            
+              return new InvoiceResponse
+              {
+                  InvoiceNumber = invoice.InvoiceNumber,
+                  CustomerName = invoice.CustomerName,
+                  GrandTotal = invoice.GrandTotal,
+                  Lines = invoice.InvoiceLines.Select(line => new InvoiceLineResponse
+                  {
+                    Description = line.Description,
+                    Quantity = line.Quantity,
+                    UnitPrice = line.UnitPrice,
+                    TaxPercent = line.TaxPercent,
+                   }).ToList()
+              };
         }
+       
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var invoice = await _uow.Invoices.GetByIdAsync(id);
 
+            if (invoice == null)
+                return false;
+
+            if (invoice.Status == InvoiceStatus.Paid)
+                throw new InvalidOperationException("Paid invoice cannot be deleted.");
+
+            invoice.IsDeleted = true;
+            invoice.DeletedAtUtc = DateTime.UtcNow;
+
+            await _uow.SaveChangesAsync();
+            return true;
+        }
+        
         private async Task<string> GenerateInvoiceNumberAsync()
         {
             int year = DateTime.UtcNow.Year;

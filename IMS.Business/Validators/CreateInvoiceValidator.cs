@@ -19,7 +19,7 @@ namespace IMS.Business.Validators
                 .WithMessage("Enter correct Date");
             RuleFor(x => x.Lines)
                 .NotEmpty()
-                .WithMessage("At least one line is required");
+                .WithMessage("At least one Line is required");
             RuleForEach(x => x.Lines)
                 .SetValidator(new CreateInvoiceLineValidator());
         }

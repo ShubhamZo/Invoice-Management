@@ -1,4 +1,5 @@
 ﻿using IMS.Business.Interface;
+using IMS.Business.Services;
 using IMS.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,15 @@ namespace IMS.Api.Controllers
     public class InvoiceController : ControllerBase
     {
         private readonly IInvoiceService _service;
-
         public InvoiceController(IInvoiceService service)
         {
             _service = service;
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var invoices = await _service.GetAllAsync();
+            return Ok(invoices);
         }
 
         [HttpPost]
@@ -29,6 +35,23 @@ namespace IMS.Api.Controllers
             var invoice = await _service.GetByIdAsync(id);
             if (invoice == null) return NotFound();
             return Ok(invoice);
+        }
+        
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var success = await _service.SoftDeleteAsync(id);
+                if (!success)
+                    return NotFound();
+
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

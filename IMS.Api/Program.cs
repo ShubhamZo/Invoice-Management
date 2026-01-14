@@ -1,4 +1,5 @@
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using IMS.Business.Interface;
 using IMS.Business.Services;
 using IMS.Business.Validators;
@@ -10,8 +11,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Adding services to the container.
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateInvoiceLineValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateInvoiceValidator>();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("IMSConnectionString")));

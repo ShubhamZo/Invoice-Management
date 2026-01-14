@@ -34,6 +34,9 @@ namespace IMS.Models.Entities
 
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAtUtc { get; set; }
+
         // Navigation Property
         public ICollection<InvoiceLine> InvoiceLines { get; set; }
             = new List<InvoiceLine>();

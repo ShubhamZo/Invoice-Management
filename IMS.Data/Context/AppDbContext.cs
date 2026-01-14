@@ -13,8 +13,11 @@ namespace IMS.Data.Context
         {
             modelBuilder.Entity<Invoice>(entity =>
             {
-                entity.HasMany(i => i.InvoiceLines).WithOne(I => I.Invoice).HasForeignKey(I => I.InvoiceId);
+                entity.HasMany(i => i.InvoiceLines).WithOne().HasForeignKey(I => I.InvoiceId);
             });
+            modelBuilder.Entity<Invoice>()
+                .HasQueryFilter(x => !x.IsDeleted);
+           
         }
     }
 }
