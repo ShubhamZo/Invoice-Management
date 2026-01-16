@@ -44,11 +44,6 @@ namespace IMS.Business.Services
         }
         public async Task<InvoiceResponse> CreateAsync(CreateInvoiceRequest request)
         {
-            /*var validationResult = await _invoicevalidator.ValidateAsync(request);
-            if (validationResult != null)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }*/
             var invoice = new Invoice
             {
                 CustomerName = request.CustomerName,
@@ -109,12 +104,15 @@ namespace IMS.Business.Services
               };
         }
        
-        public async Task<bool> SoftDeleteAsync(int id)
+        public async Task<DeleteInvoiceResponse?> SoftDeleteAsync(int id)
         {
             var invoice = await _uow.Invoices.GetByIdAsync(id);
 
             if (invoice == null)
-                return false;
+                return null;
+
+            if (invoice.IsDeleted)
+                throw new InvalidOperationException("Invoice is already deleted");
 
             if (invoice.Status == InvoiceStatus.Paid)
                 throw new InvalidOperationException("Paid invoice cannot be deleted.");
@@ -123,7 +121,10 @@ namespace IMS.Business.Services
             invoice.DeletedAtUtc = DateTime.UtcNow;
 
             await _uow.SaveChangesAsync();
-            return true;
+            return new DeleteInvoiceResponse
+            {
+                DeletedAt = invoice.DeletedAtUtc.Value
+            };
         }
         
         private async Task<string> GenerateInvoiceNumberAsync()

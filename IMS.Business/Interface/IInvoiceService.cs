@@ -8,6 +8,6 @@ namespace IMS.Business.Interface
         Task<List<InvoiceResponse>> GetAllAsync();
         Task<InvoiceResponse> CreateAsync(CreateInvoiceRequest request);
         Task<InvoiceResponse?> GetByIdAsync(int id);
-        Task<bool> SoftDeleteAsync(int id);
+        Task<DeleteInvoiceResponse?> SoftDeleteAsync(int id);
     }
 }

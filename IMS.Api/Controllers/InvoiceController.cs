@@ -38,15 +38,15 @@ namespace IMS.Api.Controllers
         }
         
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id) // 204 No Content, 400 Bad Request, 404 Not Found
         {
             try
             {
-                var success = await _service.SoftDeleteAsync(id);
-                if (!success)
+                var result = await _service.SoftDeleteAsync(id);
+                if (result == null)
                     return NotFound();
 
-                return NoContent();
+                return Ok(result);
             }
             catch (InvalidOperationException ex)
             {

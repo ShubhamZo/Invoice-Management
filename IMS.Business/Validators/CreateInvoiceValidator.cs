@@ -17,6 +17,9 @@ namespace IMS.Business.Validators
                 .NotEmpty()
                 .LessThanOrEqualTo(DateTime.Now)
                 .WithMessage("Enter correct Date");
+            RuleFor(x => x.Status)
+                .IsInEnum()
+                .WithMessage("Invalid Enum Status");
             RuleFor(x => x.Lines)
                 .NotEmpty()
                 .WithMessage("At least one Line is required");
